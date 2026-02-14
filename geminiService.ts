@@ -2,14 +2,8 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ComplexityLevel } from "./types";
 
-const API_KEY = process.env.API_KEY || '';
-
-export const getGeminiClient = () => {
-  return new GoogleGenAI({ apiKey: API_KEY });
-};
-
 export const generateTextExplanation = async (topic: string, complexity: ComplexityLevel) => {
-  const ai = getGeminiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `You are an expert Machine Learning tutor. Generate a ${complexity} explanation for the topic: "${topic}". 
   Provide clear definitions, key concepts, and practical applications. 
   Structure the response with headings. Do not use markdown symbols like # for headers, use ALL CAPS for major sections instead.`;
@@ -23,7 +17,7 @@ export const generateTextExplanation = async (topic: string, complexity: Complex
 };
 
 export const generateCodeImplementation = async (topic: string, complexity: ComplexityLevel) => {
-  const ai = getGeminiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Generate a Python implementation for "${topic}" at a ${complexity} level. 
   Include detailed comments explaining each part of the code. 
   The response should first list required libraries as a comma-separated list on a single line starting with "DEPENDENCIES:", then provide the code block.`;
@@ -44,7 +38,7 @@ export const generateCodeImplementation = async (topic: string, complexity: Comp
 };
 
 export const generateAudioLesson = async (topic: string) => {
-  const ai = getGeminiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Create a conversational audio script for a machine learning lesson about "${topic}". 
   Speak clearly, explain concepts simply, and include helpful pauses indicated by "(Pause)".
   The script should be ready for Text-to-Speech conversion.`;
@@ -75,7 +69,7 @@ export const generateAudioLesson = async (topic: string) => {
 };
 
 export const generateVisualDiagrams = async (topic: string) => {
-  const ai = getGeminiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   // 1. Generate descriptive prompts for diagrams
   const promptRequest = `Create 3 distinct technical diagram descriptions for a visual explanation of "${topic}". 
