@@ -29,8 +29,18 @@ import { User, HistoryItem } from './types';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  
+  // Initialize user and history synchronously from localStorage to prevent flicker
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('gyanguru_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    const saved = localStorage.getItem('gyanguru_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const location = useLocation();
   const navigate = useNavigate();
@@ -48,25 +58,18 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Load user and history from localStorage on mount
-  useEffect(() => {
-    const savedUser = localStorage.getItem('gyanguru_user');
-    const savedHistory = localStorage.getItem('gyanguru_history');
-    
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
-  }, []);
-
   const handleLogin = (newUser: User) => {
     setUser(newUser);
     localStorage.setItem('gyanguru_user', JSON.stringify(newUser));
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('gyanguru_user');
-    navigate('/login');
+    // We keep history as it is personal and saved in browser, 
+    // but the app flow starts from login again
+    navigate('/login', { replace: true });
   };
 
   const addToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
@@ -97,10 +100,17 @@ const App: React.FC = () => {
     { label: 'About', path: '/about', icon: Info },
   ];
 
+  // If user is logged in and tries to go to /login, redirect to home
+  if (user && location.pathname === '/login') {
+    return <Navigate to="/" replace />;
+  }
+
+  // If user is not logged in and is not at /login, redirect to /login
   if (!user && location.pathname !== '/login') {
     return <Navigate to="/login" replace />;
   }
 
+  // Handle the login page route explicitly
   if (location.pathname === '/login') {
     return <LoginPage onLogin={handleLogin} />;
   }
@@ -227,7 +237,7 @@ const App: React.FC = () => {
               <Route path="/history" element={<HistoryPage history={history} onDelete={deleteHistoryItem} />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </div>
