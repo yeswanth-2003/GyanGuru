@@ -50,7 +50,6 @@ export const generateAudioLesson = async (topic: string) => {
 
   const script = response.text || '';
   
-  // Generate the actual audio using the TTS model
   const ttsResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text: `Read this script cheerfully: ${script}` }] }],
@@ -71,7 +70,6 @@ export const generateAudioLesson = async (topic: string) => {
 export const generateVisualDiagrams = async (topic: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // 1. Generate descriptive prompts for diagrams
   const promptRequest = `Create 3 distinct technical diagram descriptions for a visual explanation of "${topic}". 
   For example, flowcharts, architecture diagrams, or conceptual illustrations. 
   Format as a JSON array of strings.`;
@@ -84,7 +82,6 @@ export const generateVisualDiagrams = async (topic: string) => {
 
   const prompts: string[] = JSON.parse(promptResponse.text || '[]');
   
-  // 2. Generate images for each prompt
   const imageUrls: string[] = [];
   for (const p of prompts) {
     const imgResponse = await ai.models.generateContent({
@@ -103,7 +100,6 @@ export const generateVisualDiagrams = async (topic: string) => {
   return { prompts, imageUrls };
 };
 
-// Audio Decoding Helpers
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);
