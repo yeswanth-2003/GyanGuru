@@ -2,11 +2,16 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ComplexityLevel } from "./types";
 
+/**
+ * World-class service for interacting with Gemini models.
+ * Each function initializes a new GoogleGenAI instance to ensure the latest API key is used.
+ */
+
 export const generateTextExplanation = async (topic: string, complexity: ComplexityLevel) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `You are an expert Machine Learning tutor. Generate a ${complexity} explanation for the topic: "${topic}". 
   Provide clear definitions, key concepts, and practical applications. 
-  Structure the response with headings. Do not use markdown symbols like # for headers, use ALL CAPS for major sections instead.`;
+  Structure the response with headings. Use ALL CAPS for section titles.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -25,6 +30,9 @@ export const generateCodeImplementation = async (topic: string, complexity: Comp
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: prompt,
+    config: {
+      thinkingConfig: { thinkingBudget: 4000 }
+    }
   });
 
   const text = response.text || '';
@@ -39,16 +47,16 @@ export const generateCodeImplementation = async (topic: string, complexity: Comp
 
 export const generateAudioLesson = async (topic: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Create a conversational audio script for a machine learning lesson about "${topic}". 
-  Speak clearly, explain concepts simply, and include helpful pauses indicated by "(Pause)".
-  The script should be ready for Text-to-Speech conversion.`;
-
-  const response = await ai.models.generateContent({
+  
+  const scriptPrompt = `Create a conversational audio script for a machine learning lesson about "${topic}". 
+  Speak clearly, explain concepts simply, and keep it under 2 minutes.`;
+  
+  const scriptResponse = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: prompt,
+    contents: scriptPrompt,
   });
 
-  const script = response.text || '';
+  const script = scriptResponse.text || '';
   
   const ttsResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
@@ -71,7 +79,6 @@ export const generateVisualDiagrams = async (topic: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const promptRequest = `Create 3 distinct technical diagram descriptions for a visual explanation of "${topic}". 
-  For example, flowcharts, architecture diagrams, or conceptual illustrations. 
   Format as a JSON array of strings.`;
 
   const promptResponse = await ai.models.generateContent({
@@ -86,7 +93,7 @@ export const generateVisualDiagrams = async (topic: string) => {
   for (const p of prompts) {
     const imgResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: { parts: [{ text: `Educational diagram, white background, professional style, clear and readable: ${p}` }] },
+      contents: { parts: [{ text: `High quality educational machine learning diagram, clean lines, professional white background: ${p}` }] },
       config: { imageConfig: { aspectRatio: "16:9" } }
     });
 
@@ -100,10 +107,11 @@ export const generateVisualDiagrams = async (topic: string) => {
   return { prompts, imageUrls };
 };
 
-export const decodeBase64Audio = (base64: string) => {
+export const decodeBase64 = (base64: string) => {
   const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
