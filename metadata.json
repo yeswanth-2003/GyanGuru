@@ -1,0 +1,7 @@
+{
+  "name": "Copy of GyanGuru: AI Powered Learning Assistant",
+  "description": "An advanced AI-powered educational platform designed to transform how students and professionals learn Machine Learning through multiple interactive modalities: text, code, audio, and visual diagrams.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
